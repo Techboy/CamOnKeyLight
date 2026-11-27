@@ -22,9 +22,7 @@ Buying an Elgato light? Sign up through my [TopCashback referral link](https://w
 
 The main window is a dark status dashboard. A hero line says whether the lights are on or off and why, for example **Lights are off** / **because your camera is off**, with a pill such as **Auto: lights follow the camera**. Each light is a card with its name, address, group and an on/off pill. **Add light**, **Find lights** and **Retry** sit under the cards. **Auto / On / Off** is a segmented control, and the delays are in seconds. **Settings** and **Help** are in the header. The footer links to documentation, issues, releases and About.
 
-The pictures in this guide still show the previous window. They need replacing with captures of this dashboard. A pull request build uploads new captures as the `ui-screenshots` artifact when the Windows runner can draw a window.
-
-![Previous main window, version 0.7.0. This picture still needs a capture of the new dashboard.](docs/camonkeylight-main-window.png)
+![Main window in dark mode: lights are off because the camera is off, with Auto selected and delays in seconds](docs/camonkeylight-main-window.png)
 
 ## Features
 
@@ -132,33 +130,31 @@ The shortcut works while the window is closed. The tray menu shows it next to Au
 
 **Settings** in the header, and **Settings…** on the tray, holds the settings that are not on the main window. A list on the left opens Quiet hours, Camera apps, Groups, Notifications, Home relay and About. **Save changes** keeps them. Home relay is optional. Leave **Use a home relay** off unless you use the [home relay](#home-relay). Turning that switch off and saving clears the saved relay address. The secrets file is kept.
 
-The settings pictures below are still the previous tabbed window.
-
 ### Quiet hours
 
 Quiet hours stay off until you tick **Enable quiet hours**. The times start at 22:00 and 07:00, which crosses midnight, and every day starts selected. If the start and end are the same, the selected days are quiet all day. Use 24-hour times.
 
 While quiet hours are active, automatic mode does not turn lights on. On and Off from the tray still work, and so do On and Off in the window. The tray tooltip and menu show whether quiet hours are active.
 
-![Quiet hours options: off, from 22:00 to 07:00, every day selected](docs/camonkeylight-options-quiet-hours.png)
+![Quiet hours, off, from 22:00 to 07:00, every day selected](docs/camonkeylight-options-quiet-hours.png)
 
 ### Camera apps
 
 **All apps** is selected by default, so any app using the camera counts. **Only these apps** counts only the ticked names. **All except these apps** ignores the ticked names. Names appear after an app uses the camera, or you can type an exe name and press **Add**.
 
-![Camera apps options, with All apps selected](docs/camonkeylight-options-camera-apps.png)
+![Camera apps, with All apps selected](docs/camonkeylight-options-camera-apps.png)
 
 ### Groups
 
 **All groups follow the camera** is ticked by default. Untick it to choose which groups follow. Automatic switching stays per light. Lights with no group follow the camera only when every group does. The tray menu can still turn a group on or off, or set its brightness.
 
-![Groups options, with all groups set to follow the camera](docs/camonkeylight-options-groups.png)
+![Groups, with all groups set to follow the camera](docs/camonkeylight-options-groups.png)
 
 ### Notifications
 
 **Notify when a light goes offline or comes back** is on by default. Offline and online notices wait about 20 seconds, so a light that flickers does not send a burst of messages. The first check after startup does not notify. **Notify when an update is installed** is off until you turn it on.
 
-![Notification options, with offline notices on and update notices off](docs/camonkeylight-options-notifications.png)
+![Notifications, with offline notices on and update notices off](docs/camonkeylight-options-notifications.png)
 
 ## Appearance
 
@@ -262,7 +258,7 @@ curl -H "CF-Access-Client-Id: YOUR_CLIENT_ID" \
 
 Open **Settings** → **Home relay** and turn on **Use a home relay**.
 
-![Relay options, with empty Relay URL, Access client ID, Access client secret and Shared secret boxes, and a Test relay button](docs/camonkeylight-options-relay.png)
+![Home relay, with Use a home relay off and the address and secret fields empty](docs/camonkeylight-options-relay.png)
 
 1. Relay URL: `https://lights.example.com` (your public hostname, with `https://`, and no path).
 2. Access client ID: the Client ID from the service token.
