@@ -84,6 +84,8 @@ Closing the window hides it and leaves the app running. Double-click the icon to
 
 **Help** contains **Documentation**, **Report an issue**, **Release notes** and **GitHub project**, which open this project's pages in the browser, and a link to the Elgato website. **About Cam On Key Light** is last, after a separator. The same documentation, issue and release links, plus About, are along the bottom of the main window. **About** also links to the GitHub project and to the Elgato website. **Settings** in the header, and **Settings…** on the tray, opens the extra settings.
 
+![About, with documentation, issue, release and GitHub links](docs/camonkeylight-about.png)
+
 ## Lights
 
 Each card shows the description (or the address, if you have not named it), the address, the group and the status.
