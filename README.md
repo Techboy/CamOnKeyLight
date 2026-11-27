@@ -233,7 +233,7 @@ LCARS is an x86-64 Synology. The image is built for `linux/amd64` and `linux/arm
 3. Leave `DISCOVER` at `false` unless you want the container to look for `_elg._tcp.local` on the LAN. Discovery needs the host network. Addresses you listed are kept either way.
 4. Use the host network so the container can open connections to the lights. The relay listens on port 8080 of the NAS by default. If something else on the NAS already uses 8080 (the log then shows "Address in use"), pick a free port such as 8091 and set `ASPNETCORE_URLS` to `http://0.0.0.0:8091`. Also set `HTTP_PORTS` to an empty string, otherwise the log shows a harmless warning that `HTTP_PORTS` is being overridden and Container Manager marks the container with a warning. Use `0.0.0.0` rather than `127.0.0.1` if `cloudflared` runs in a separate container or on another machine. Do not forward the relay port from the router.
 5. Set the restart policy to always, or `unless-stopped` as in the compose file.
-6. On the NAS, `curl http://127.0.0.1:8080/health` (or your chosen port) should return `{"status":"ok"}`.
+6. On the NAS, `curl http://127.0.0.1:8080/health` (or your chosen port) should return `{"status":"ok"}`. The image health check runs `dotnet CamOnKeyLight.Relay.dll --healthcheck`. It uses the port from `ASPNETCORE_URLS`, or from `HTTP_PORTS` when no URL is set, and requests `/health` on 127.0.0.1. A move to 8091 stays healthy.
 
 A working compose file on a NAS where 8080 is already taken looks like this:
 

@@ -11,14 +11,14 @@ RUN dotnet publish relay/CamOnKeyLight.Relay.csproj -c Release -o /app --no-rest
 
 FROM mcr.microsoft.com/dotnet/aspnet:11.0-alpine AS runtime
 USER root
-RUN apk add --no-cache wget
 WORKDIR /app
-COPY --from=build /app .
-RUN chown -R 1654:1654 /app
+COPY --from=build --chown=1654:1654 /app .
 USER 1654
 ENV ASPNETCORE_URLS=http://+:8080 \
     DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
 EXPOSE 8080
+# dotnet is on PATH in the ASP.NET runtime image. The probe reads
+# ASPNETCORE_URLS, then HTTP_PORTS / ASPNETCORE_HTTP_PORTS, so a custom port stays healthy.
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-    CMD wget -q -O /dev/null http://127.0.0.1:8080/health || exit 1
+    CMD ["dotnet", "CamOnKeyLight.Relay.dll", "--healthcheck"]
 ENTRYPOINT ["dotnet", "CamOnKeyLight.Relay.dll"]
