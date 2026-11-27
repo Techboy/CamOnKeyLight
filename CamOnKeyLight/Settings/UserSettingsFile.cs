@@ -84,7 +84,7 @@ namespace CamOnKeyLight
             AppUserSettings settings = AppUserSettings.CreateDefault();
             settings.CameraOnDelayMs = Properties.Settings.Default.CameraDelay;
             settings.CameraOffDelayMs = Properties.Settings.Default.CameraOffDelay;
-            settings.Theme = Properties.Settings.Default.Theme ?? "FollowWindows";
+            settings.Theme = Properties.Settings.Default.Theme ?? "Dark";
             settings.AutomaticUpdates = Properties.Settings.Default.AutomaticUpdates;
             settings.LightMode = Properties.Settings.Default.LightMode ?? "Auto";
             settings.HotkeyAuto = Properties.Settings.Default.HotkeyAuto ?? "";

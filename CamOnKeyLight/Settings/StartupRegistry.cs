@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using CamOnKeyLight.Core;
 using Microsoft.Win32;
 
@@ -14,7 +15,7 @@ namespace CamOnKeyLight
                 return false;
 
             Dictionary<string, string> values = Read(key);
-            string exe = Application.ExecutablePath;
+            string exe = CurrentExecutable();
             IReadOnlyList<StartupEdit> edits = enable
                 ? StartupRegistration.Enable(exe, values)
                 : StartupRegistration.Disable(values);
@@ -34,8 +35,15 @@ namespace CamOnKeyLight
             if (!StartupRegistration.HadStartupEnabled(values))
                 return false;
 
-            Apply(key, StartupRegistration.Enable(Application.ExecutablePath, values));
+            Apply(key, StartupRegistration.Enable(CurrentExecutable(), values));
             return true;
+        }
+
+        private static string CurrentExecutable()
+        {
+            return Environment.ProcessPath
+                ?? Process.GetCurrentProcess().MainModule?.FileName
+                ?? "";
         }
 
         private static Dictionary<string, string> Read(RegistryKey key)

@@ -36,7 +36,11 @@ namespace CamOnKeyLight.Core
         public List<LightRecord> Lights { get; set; } = new List<LightRecord>();
         public decimal CameraOnDelayMs { get; set; }
         public decimal CameraOffDelayMs { get; set; } = LightTiming.DefaultOffDelayMilliseconds;
-        public string Theme { get; set; } = "FollowWindows";
+        /// <summary>
+        /// Light, Dark, or FollowWindows. A new install uses Dark. FollowWindows is the System choice.
+        /// An existing saved value is left as it is.
+        /// </summary>
+        public string Theme { get; set; } = "Dark";
         public bool AutomaticUpdates { get; set; } = true;
         public string LightMode { get; set; } = "Auto";
         public string HotkeyAuto { get; set; } = "";
@@ -204,7 +208,7 @@ namespace CamOnKeyLight.Core
                 }
             }
 
-            settings.Theme ??= "FollowWindows";
+            settings.Theme ??= "Dark";
             settings.LightMode ??= "Auto";
             settings.HotkeyAuto ??= "";
             settings.HotkeyOn ??= "";

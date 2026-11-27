@@ -1,0 +1,51 @@
+<Window x:Class="CamOnKeyLight.ShortcutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Keyboard shortcuts" Width="520" SizeToContent="Height" ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner" PreviewKeyDown="Window_PreviewKeyDown"
+        Background="{DynamicResource WindowBackgroundBrush}"
+        Foreground="{DynamicResource TextBrush}"
+        Icon="pack://application:,,,/Resources/Icon.ico">
+  <StackPanel Margin="18">
+    <TextBlock Style="{StaticResource Hint}" Margin="0,0,0,12"
+               Text="These shortcuts work while this window is closed. Nothing is reserved at first, so other programs keep their keys. Use Ctrl, Alt, or Shift with a letter, number, or function key."/>
+    <Grid Margin="0,4">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="70"/>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="Auto"/>
+        <ColumnDefinition Width="Auto"/>
+      </Grid.ColumnDefinitions>
+      <TextBlock Grid.Column="0" Text="Auto" VerticalAlignment="Center"/>
+      <TextBlock x:Name="AutoValue" Grid.Column="1" VerticalAlignment="Center" TextWrapping="NoWrap"/>
+      <Button Grid.Column="2" Content="Set" Margin="8,0" Click="SetAuto_Click" AutomationProperties.Name="Set Auto shortcut"/>
+      <Button Grid.Column="3" Content="Clear" Click="ClearAuto_Click" AutomationProperties.Name="Clear Auto shortcut"/>
+    </Grid>
+    <Grid Margin="0,8">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="70"/>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="Auto"/>
+        <ColumnDefinition Width="Auto"/>
+      </Grid.ColumnDefinitions>
+      <TextBlock Grid.Column="0" Text="On" VerticalAlignment="Center"/>
+      <TextBlock x:Name="OnValue" Grid.Column="1" VerticalAlignment="Center" TextWrapping="NoWrap"/>
+      <Button Grid.Column="2" Content="Set" Margin="8,0" Click="SetOn_Click" AutomationProperties.Name="Set On shortcut"/>
+      <Button Grid.Column="3" Content="Clear" Click="ClearOn_Click" AutomationProperties.Name="Clear On shortcut"/>
+    </Grid>
+    <Grid Margin="0,4,0,8">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="70"/>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="Auto"/>
+        <ColumnDefinition Width="Auto"/>
+      </Grid.ColumnDefinitions>
+      <TextBlock Grid.Column="0" Text="Off" VerticalAlignment="Center"/>
+      <TextBlock x:Name="OffValue" Grid.Column="1" VerticalAlignment="Center" TextWrapping="NoWrap"/>
+      <Button Grid.Column="2" Content="Set" Margin="8,0" Click="SetOff_Click" AutomationProperties.Name="Set Off shortcut"/>
+      <Button Grid.Column="3" Content="Clear" Click="ClearOff_Click" AutomationProperties.Name="Clear Off shortcut"/>
+    </Grid>
+    <TextBlock x:Name="Status" Style="{StaticResource Hint}" MinHeight="36"/>
+    <Button Content="Close" HorizontalAlignment="Right" IsCancel="True" IsDefault="True" MinWidth="88"/>
+  </StackPanel>
+</Window>
