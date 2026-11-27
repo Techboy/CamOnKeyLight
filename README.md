@@ -258,6 +258,8 @@ curl -H "CF-Access-Client-Id: YOUR_CLIENT_ID" \
 
 Open **Options** → **Relay**.
 
+![Relay options, with empty Relay URL, Access client ID, Access client secret and Shared secret boxes, and a Test relay button](docs/camonkeylight-options-relay.png)
+
 1. Relay URL: `https://lights.example.com` (your public hostname, with `https://`, and no path).
 2. Access client ID: the Client ID from the service token.
 3. Access client secret: the Client Secret from the service token.
