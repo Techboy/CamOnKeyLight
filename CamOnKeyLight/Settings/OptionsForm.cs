@@ -21,18 +21,30 @@ namespace CamOnKeyLight
         private CheckedListBox groupList = null!;
         private CheckBox notifyPresence = null!;
         private CheckBox notifyUpdate = null!;
+        private readonly RelayCredentials credentials;
+        private TabPage relayPage = null!;
+        private TextBox relayUrlBox = null!;
+        private TextBox clientIdBox = null!;
+        private TextBox clientSecretBox = null!;
+        private TextBox sharedSecretBox = null!;
+        private Button testRelay = null!;
+        private Label relayResult = null!;
+        private Label relayError = null!;
 
-        public OptionsForm(AppUserSettings settings, IReadOnlyList<string> groups, IReadOnlyList<string> observedApps)
+        public RelayCredentials Credentials => credentials;
+
+        public OptionsForm(AppUserSettings settings, IReadOnlyList<string> groups, IReadOnlyList<string> observedApps, RelayCredentials credentials)
         {
             this.settings = settings;
-            const int logicalWidth = 520;
+            this.credentials = credentials.Copy();
+            const int logicalWidth = 680;
             DialogShell.Prepare(this, "Options", logicalWidth);
             int inner = DialogShell.ContentWidth(logicalWidth);
             tabs = new TabControl
             {
                 Width = inner,
-                Height = 360,
-                MinimumSize = new Size(inner, 360),
+                Height = 420,
+                MinimumSize = new Size(inner, 420),
                 SizeMode = TabSizeMode.Fixed,
                 ItemSize = new Size(118, 28),
                 DrawMode = TabDrawMode.OwnerDrawFixed
@@ -43,6 +55,8 @@ namespace CamOnKeyLight
             tabs.TabPages.Add(AppsPage(inner, observedApps));
             tabs.TabPages.Add(GroupsPage(inner, groups));
             tabs.TabPages.Add(NotificationsPage(inner));
+            relayPage = RelayPage(inner);
+            tabs.TabPages.Add(relayPage);
             Button ok = DialogShell.CommandButton("OK", DialogResult.None);
             Button cancel = DialogShell.CommandButton("Cancel", DialogResult.Cancel);
             ok.Click += (_, _) => Accept();
@@ -208,6 +222,117 @@ namespace CamOnKeyLight
             return page;
         }
 
+        private TabPage RelayPage(int inner)
+        {
+            TabPage page = new TabPage("Relay") { Padding = new Padding(8) };
+            Label urlLabel = new Label { AutoSize = true, Text = "Relay URL", Location = new Point(8, 12) };
+            relayUrlBox = new TextBox
+            {
+                Location = new Point(156, 8),
+                Width = inner - 176,
+                Text = settings.RelayUrl,
+                AccessibleName = "Relay URL"
+            };
+            Label clientLabel = new Label { AutoSize = true, Text = "Access client ID", Location = new Point(8, 44) };
+            clientIdBox = new TextBox
+            {
+                Location = new Point(156, 40),
+                Width = inner - 176,
+                Text = credentials.ClientId,
+                AccessibleName = "Access client ID"
+            };
+            Label secretLabel = new Label { AutoSize = true, Text = "Access client secret", Location = new Point(8, 76) };
+            clientSecretBox = new TextBox
+            {
+                Location = new Point(156, 72),
+                Width = inner - 176,
+                Text = credentials.ClientSecret,
+                UseSystemPasswordChar = true,
+                AccessibleName = "Access client secret"
+            };
+            Label sharedLabel = new Label { AutoSize = true, Text = "Shared secret", Location = new Point(8, 108) };
+            sharedSecretBox = new TextBox
+            {
+                Location = new Point(156, 104),
+                Width = inner - 176,
+                Text = credentials.SharedSecret,
+                UseSystemPasswordChar = true,
+                AccessibleName = "Relay shared secret"
+            };
+            testRelay = new Button
+            {
+                Text = "Test relay",
+                Location = new Point(156, 136),
+                Size = new Size(110, DialogShell.ButtonHeight)
+            };
+            testRelay.Click += TestRelayClicked;
+            relayResult = new Label
+            {
+                Location = new Point(276, 140),
+                AutoSize = true,
+                MaximumSize = new Size(Math.Max(80, inner - 300), 48),
+                Text = ""
+            };
+            relayError = new Label
+            {
+                Location = new Point(8, 176),
+                AutoSize = true,
+                MaximumSize = new Size(inner - 24, 36),
+                Text = ""
+            };
+            Label hint = new Label
+            {
+                Location = new Point(8, 216),
+                MaximumSize = new Size(inner - 24, 150),
+                AutoSize = true,
+                Text = "Leave the address empty and the app talks only to the lights on this network, as it does today. Fill it in when this PC cannot reach the lights directly. The app still tries each light first, and uses the relay only when that attempt fails. The access client secret and the shared secret are saved with Windows data protection for this user. They are not written into the settings file. Test relay checks the connection and does not switch the lights."
+            };
+            page.Controls.Add(urlLabel);
+            page.Controls.Add(relayUrlBox);
+            page.Controls.Add(clientLabel);
+            page.Controls.Add(clientIdBox);
+            page.Controls.Add(secretLabel);
+            page.Controls.Add(clientSecretBox);
+            page.Controls.Add(sharedLabel);
+            page.Controls.Add(sharedSecretBox);
+            page.Controls.Add(testRelay);
+            page.Controls.Add(relayResult);
+            page.Controls.Add(relayError);
+            page.Controls.Add(hint);
+            return page;
+        }
+
+        private async void TestRelayClicked(object? sender, EventArgs e)
+        {
+            testRelay.Enabled = false;
+            relayError.Text = "";
+            relayResult.Text = "Checking the relay…";
+            try
+            {
+                using HttpClient client = new HttpClient { Timeout = TimeSpan.FromSeconds(8) };
+                relayResult.Text = await RelayProbe.DescribeAsync(relayUrlBox.Text, CurrentCredentials(), client, CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                relayResult.Text = "The relay did not answer.";
+                AppLog.Write("relay", "test", ex.GetType().Name);
+            }
+            finally
+            {
+                testRelay.Enabled = true;
+            }
+        }
+
+        private RelayCredentials CurrentCredentials()
+        {
+            return new RelayCredentials
+            {
+                ClientId = clientIdBox.Text.Trim(),
+                ClientSecret = clientSecretBox.Text.Trim(),
+                SharedSecret = sharedSecretBox.Text.Trim()
+            };
+        }
+
         private void DrawTab(object? sender, DrawItemEventArgs e)
         {
             bool selected = tabs.SelectedIndex == e.Index;
@@ -262,8 +387,32 @@ namespace CamOnKeyLight
             settings.CameraGroups = groupList.CheckedItems.Cast<object>().Select(item => item.ToString() ?? "").Where(name => name.Length > 0).ToList();
             settings.NotifyLightPresence = notifyPresence.Checked;
             settings.NotifyOnUpdate = notifyUpdate.Checked;
+            if (!RelayUrls.TryNormalize(relayUrlBox.Text, out string relayUrl, out string? relayProblem))
+            {
+                relayError.Text = relayProblem ?? "The relay address is not valid.";
+                tabs.SelectedTab = relayPage;
+                relayUrlBox.Focus();
+                return;
+            }
+
+            if (HasLineBreak(clientIdBox.Text) || HasLineBreak(clientSecretBox.Text) || HasLineBreak(sharedSecretBox.Text))
+            {
+                relayError.Text = "A credential contains a line break.";
+                tabs.SelectedTab = relayPage;
+                return;
+            }
+
+            settings.RelayUrl = relayUrl;
+            credentials.ClientId = clientIdBox.Text.Trim();
+            credentials.ClientSecret = clientSecretBox.Text.Trim();
+            credentials.SharedSecret = sharedSecretBox.Text.Trim();
             DialogResult = DialogResult.OK;
             Close();
+        }
+
+        private static bool HasLineBreak(string value)
+        {
+            return value.Contains('\r') || value.Contains('\n');
         }
     }
 }

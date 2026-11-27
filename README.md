@@ -38,11 +38,11 @@ The main window lists each light's address, description, group and status. **Add
 
 ## Requirements
 
-- 64-bit Windows 10 (version 1607 or later) or Windows 11. The .NET 10 runtime is included in the download, so you do not install it separately.
-- This PC and the lights on the same local network. The app talks to each light over HTTP. The port is 9123 unless you put a different port on the address.
+- 64-bit Windows 11, or 64-bit Windows 10 Enterprise or LTSC (versions 1607, 1809, and 21H2). The .NET 11 runtime is included in the download, so you do not install it separately. .NET 11 needs a 64-bit processor with SSE4.2, which these Windows versions already require.
+- This PC and the lights on the same local network, unless you set up the [home relay](#home-relay). The app talks to each light over HTTP. The port is 9123 unless you put a different port on the address.
 - The setup program installs for the current user and does not ask for administrator approval.
 
-The app leaves Windows networking, VPN, routes and company security software as they are.
+The app leaves Windows networking, VPN, routes and company security software as they are. The relay is optional. With the relay address empty, the app behaves as it did before.
 
 ## Download
 
@@ -128,7 +128,7 @@ The shortcut works while the window is closed. The tray menu shows it next to Au
 
 ## Options
 
-**Options** on the menu bar, and **Options…** on the tray, holds the settings that are not on the main window.
+**Options** on the menu bar, and **Options…** on the tray, holds the settings that are not on the main window. The Relay tab is optional. Leave it empty unless you use the [home relay](#home-relay).
 
 ### Quiet hours
 
@@ -162,7 +162,7 @@ Choose **Light**, **Dark** or **Follow Windows**. The choice is saved. Follow Wi
 
 ## Settings
 
-Light addresses, descriptions, groups, delays, theme, light mode, shortcuts, quiet hours, camera-app rules, notification choices and the update tick box are stored in `%LOCALAPPDATA%\CamOnKeyLight\user-settings.json`. That file sits outside the program folder, so installing, updating or moving the program leaves it in place. A settings file from an older version still loads. Anything that file does not mention yet uses the default.
+Light addresses, descriptions, groups, delays, theme, light mode, shortcuts, quiet hours, camera-app rules, notification choices, the update tick box and the relay address are stored in `%LOCALAPPDATA%\CamOnKeyLight\user-settings.json`. That file sits outside the program folder, so installing, updating or moving the program leaves it in place. A settings file from an older version still loads. Anything that file does not mention yet uses the default. The Cloudflare Access client id, client secret and the relay shared secret are not in that file. They are stored beside it in `relay-secrets.bin`, protected with Windows data protection for the current user. Uninstall leaves this folder in place.
 
 The first time this version starts, if that file is missing and `%LOCALAPPDATA%\AutoKeyLight\user-settings.json` exists, the app copies the old file and leaves the original in place. It also picks up an existing `user.config` from the older per-folder settings when that file still has your lights. A saved off delay of 0 stays 0. Descriptions start blank until you edit them.
 
@@ -182,6 +182,71 @@ A download is accepted only from this repository's GitHub release. The zip is ch
 
 Version 0.6.0 is different. It asks GitHub for a repository named Techboy/AutoKeyLight, and it only accepts a download address under `/Techboy/AutoKeyLight/releases/download/`. This repository is now Techboy/CamOnKeyLight, and GitHub lists the files under that name, so a PC still on 0.6.0 will not take the update by itself. Install `CamOnKeyLight-Setup.exe`, or the current portable zip, on that PC. The release still includes `AutoKeyLight-win-x64.zip` because that is the package shape 0.6.0 knows how to open: it has to contain `AutoKeyLight.exe` and it must not contain `CamOnKeyLight.exe`.
 
+## Home relay
+
+Use this when the PC cannot reach the lights on the home LAN, for example while a work VPN is connected and that VPN captures private addresses (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`). Normal internet traffic still goes out directly, so the app can reach a relay on your NAS through a Cloudflare Tunnel. The app tries each light directly first. If that attempt does not connect, it sends the same command through the relay. It remembers the failure for about 45 seconds, so the next switch does not wait on the direct attempt again. Brightness commands are sent as the same JSON the light already accepts, including colour temperature when a body contains it.
+
+With the relay address left empty, none of this runs. Timeouts, status text and the network calls stay as they are today.
+
+The relay is a small web service in `relay/`. It only forwards to the light addresses you list. It does not accept an arbitrary URL. Cloudflare Access authenticates the PC with a service token. An optional shared secret is checked again on the NAS.
+
+The container listens on port 8080. These are the paths:
+
+| Method | Path | What it does |
+| --- | --- | --- |
+| GET | `/health` | Answers without the shared secret, for the container health check. |
+| GET | `/v1/ping` | Checks the secret and reports how many lights are configured. It does not change a light. |
+| GET | `/v1/lights?address=` | Reads one light. |
+| PUT | `/v1/lights?address=` | Forwards a JSON body to that light. |
+| POST | `/v1/lights/on?address=` | Turns that light on. |
+| POST | `/v1/lights/off?address=` | Turns that light off. |
+
+When `RELAY_SHARED_SECRET` is set, every path except `/health` requires the header `X-Relay-Secret`. The app also sends `CF-Access-Client-Id` and `CF-Access-Client-Secret` when those boxes are filled in.
+
+### NAS container
+
+The image is published to GHCR as `ghcr.io/techboy/camonkeylight-relay`. The moving tag is `latest`. A build also tags `sha-<short sha>`, and a version tag such as `v1.2.3` publishes that version. GitHub marks a new package private. In the package settings, make it public, or sign Container Manager in to `ghcr.io` with a personal access token that can read packages. The image has no secrets in it.
+
+LCARS is an x86-64 Synology. The image is built for `linux/amd64` and `linux/arm64`. In Container Manager, create a project from `relay/docker-compose.yml`, or create a container from the image with the host network and the environment variables below.
+
+1. Put the lights in `LIGHTS`, separated by commas. `192.168.1.5` means port 9123. Add `:port` only when a light is not on 9123.
+2. Set `RELAY_SHARED_SECRET` to a long random string. Leave it unset only if you are content with Cloudflare Access as the only check.
+3. Leave `DISCOVER` at `false` unless you want the container to look for `_elg._tcp.local` on the LAN. Discovery needs the host network. Addresses you listed are kept either way.
+4. Use the host network. The process then listens on port 8080 of the NAS, and it can open connections to the lights. Do not forward port 8080 from the router.
+5. Set the restart policy to always, or `unless-stopped` as in the compose file.
+6. On the NAS, `http://127.0.0.1:8080/health` should return `{"status":"ok"}`.
+
+### Cloudflare Tunnel
+
+1. In the Cloudflare Zero Trust dashboard, open **Networks** → **Tunnels** and create a tunnel. Install `cloudflared` on the NAS with the token the dashboard shows. A second Container Manager container running `cloudflare/cloudflared` with that token is enough. Give that container the host network as well, so it can reach `127.0.0.1:8080`.
+2. Add a public hostname. The subdomain is yours, for example `lights`, on a domain Cloudflare already hosts. The service type is **HTTP**. The URL is `http://127.0.0.1:8080`. Leave the path empty. Save the hostname.
+
+### Cloudflare Access service token
+
+1. Open **Access** → **Service credentials** → **Service tokens**. Create a token named `Cam On Key Light`. Copy the Client ID and the Client Secret. The secret is shown once. Store it in a password manager.
+2. Open **Access** → **Applications** → **Add an application** → **Self-hosted**. Name it `Key lights`. The application domain is the public hostname from the tunnel, for example `lights.example.com`.
+3. Add one policy. Name it `Service token`. The action is **Service Auth**. The include rule is **Service Token**, and the value is the token you just created. Do not add a policy that allows everyone, and do not add an email login policy. Save the application.
+4. A request without the service token is stopped by Cloudflare and never reaches the NAS. A manual check uses placeholders, not real secrets:
+
+```bash
+curl -H "CF-Access-Client-Id: YOUR_CLIENT_ID" \
+  -H "CF-Access-Client-Secret: YOUR_CLIENT_SECRET" \
+  -H "X-Relay-Secret: YOUR_SHARED_SECRET" \
+  https://lights.example.com/v1/ping
+```
+
+### App settings
+
+Open **Options** → **Relay**.
+
+1. Relay URL: `https://lights.example.com` (your public hostname, with `https://`, and no path).
+2. Access client ID: the Client ID from the service token.
+3. Access client secret: the Client Secret from the service token.
+4. Shared secret: the same string as `RELAY_SHARED_SECRET`. Leave it empty only when the container has no shared secret.
+5. Press **Test relay**. A working setup says the relay answered and how many lights are configured. The test does not switch the lights. **OK** saves the address in `user-settings.json` and the three credential fields in `relay-secrets.bin`.
+
+The window shows **via relay** on a light, and in the lights summary, while that path is in use. The tray tip gains a relay note when it still fits. After you disconnect the VPN, the next successful direct check drops the note.
+
 ## Troubleshooting
 
 **An address you removed comes back after a restart.** The app reads lights from `%APPDATA%\Elgato\ControlCenter\Settings.xml` when Elgato Control Center has saved them. Open that file and delete the old `<IpAddress>` entries inside `<Accessories>`, or delete the file. Deleting the file clears the settings Control Center stored there.
@@ -192,7 +257,9 @@ Version 0.6.0 is different. It asks GitHub for a repository named Techboy/AutoKe
 
 If you can reserve an address for the light on your router, it keeps the same IP after the light restarts.
 
-**The status says Unreachable.** The light did not answer within 5 seconds. Check that this PC and the light are on the same network, then press **Retry**. Retry only checks the connection. It leaves VPN settings, routes and security software alone.
+**The status says Unreachable.** The light did not answer within 5 seconds, or, when a relay is configured, the direct attempt and the relay both failed. Check that this PC and the light are on the same network, then press **Retry**. Retry only checks the connection. It leaves VPN settings, routes and security software alone. If the lights are unreachable only while a work VPN is connected, and that VPN sends private addresses down the tunnel, set up the [home relay](#home-relay). The camera line is not affected.
+
+**The status says On via relay or Off via relay.** The app could not reach that light directly, so it used the home relay. On the local network, with the VPN disconnected, the status goes back to On or Off with no relay note.
 
 **The lights flicker when one camera app takes over from another.** Raise **Off delay**. A new install uses 1500 ms, which is there for that gap.
 
@@ -217,10 +284,11 @@ The version in the program comes from that tag. The workflow builds the zip file
 
 ## Build
 
-The logic tests run on .NET 10, including on a machine that is not running Windows:
+The logic tests run on .NET 11, including on a machine that is not running Windows:
 
 ```bash
-dotnet test CamOnKeyLight.Core.Tests/CamOnKeyLight.Core.Tests.csproj -c Release
+dotnet test --project CamOnKeyLight.Core.Tests/CamOnKeyLight.Core.Tests.csproj -c Release
+dotnet test --project relay/CamOnKeyLight.Relay.Tests/CamOnKeyLight.Relay.Tests.csproj -c Release
 ```
 
 The Windows app itself builds on Windows:
@@ -235,7 +303,13 @@ To build the packages a release would publish, on Windows, pass the version to s
 pwsh -NoProfile -File build/package.ps1 -Version 0.8.0
 ```
 
-The script publishes the app, runs the package checks, and writes `CamOnKeyLight-win-x64.zip`, `AutoKeyLight-win-x64.zip` and `CamOnKeyLight-Setup.exe` under `dist`, with a `.sha256` file beside each one. The setup program is compiled with Inno Setup 6.4.3. If that compiler is not already unpacked in the build's work folder, the script downloads it.
+The script publishes the app, runs the package checks, and writes `CamOnKeyLight-win-x64.zip`, `AutoKeyLight-win-x64.zip` and `CamOnKeyLight-Setup.exe` under `dist`, with a `.sha256` file beside each one. The setup program is compiled with Inno Setup 7.1.1. If that compiler is not already unpacked in the build's work folder, the script downloads it.
+
+The relay image is built from the repository root:
+
+```bash
+docker build -f relay/Dockerfile -t ghcr.io/techboy/camonkeylight-relay:local .
+```
 
 ## Licence
 

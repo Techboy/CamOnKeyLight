@@ -1,0 +1,16 @@
+# Home relay for Cam On Key Light.
+# Synology Container Manager can import this file. Use the host network so the
+# container can reach the lights, and so a Cloudflare tunnel on the NAS can use
+# http://127.0.0.1:8080.
+#
+# Replace the placeholder values. Do not commit a real secret.
+
+services:
+  keylight-relay:
+    image: ghcr.io/techboy/camonkeylight-relay:latest
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      LIGHTS: "192.168.1.5,192.168.1.6"
+      RELAY_SHARED_SECRET: "replace-with-a-long-random-string"
+      DISCOVER: "false"

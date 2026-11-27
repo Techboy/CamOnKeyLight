@@ -54,6 +54,12 @@ namespace CamOnKeyLight.Core
         public bool NotifyLightPresence { get; set; } = true;
         public bool NotifyOnUpdate { get; set; }
 
+        /// <summary>
+        /// Base address of the home relay, for example https://lights.example.com.
+        /// Empty means the app talks only to the lights. Secrets are not stored here.
+        /// </summary>
+        public string RelayUrl { get; set; } = "";
+
         public static AppUserSettings CreateDefault()
         {
             return new AppUserSettings();
@@ -78,7 +84,8 @@ namespace CamOnKeyLight.Core
                 CameraAppMode = CameraAppMode,
                 AllGroupsFollowCamera = AllGroupsFollowCamera,
                 NotifyLightPresence = NotifyLightPresence,
-                NotifyOnUpdate = NotifyOnUpdate
+                NotifyOnUpdate = NotifyOnUpdate,
+                RelayUrl = RelayUrl
             };
             copy.KnownCameraApps.AddRange(KnownCameraApps);
             copy.SelectedCameraApps.AddRange(SelectedCameraApps);
@@ -94,6 +101,7 @@ namespace CamOnKeyLight.Core
         public const string DisplayName = "Cam On Key Light";
         public const string LegacyDisplayName = "Auto Key Light";
         public const string SettingsFileName = "user-settings.json";
+        public const string RelaySecretFileName = "relay-secrets.bin";
         public const string DataFolderName = "CamOnKeyLight";
         public const string LegacyDataFolderName = "AutoKeyLight";
         public const string InstallFolder = "Programs";
@@ -121,6 +129,11 @@ namespace CamOnKeyLight.Core
         public static string SettingsFile(string localAppData)
         {
             return Path.Combine(DataDirectory(localAppData), SettingsFileName);
+        }
+
+        public static string RelaySecretFile(string localAppData)
+        {
+            return Path.Combine(DataDirectory(localAppData), RelaySecretFileName);
         }
 
         public static string LegacySettingsFile(string localAppData)
@@ -203,6 +216,7 @@ namespace CamOnKeyLight.Core
             settings.KnownCameraApps = CameraAppNames.Clean(settings.KnownCameraApps);
             settings.SelectedCameraApps = CameraAppNames.Clean(settings.SelectedCameraApps);
             settings.CameraGroups = LightGrouping.Clean(settings.CameraGroups);
+            settings.RelayUrl = (settings.RelayUrl ?? "").Trim();
             return settings;
         }
     }

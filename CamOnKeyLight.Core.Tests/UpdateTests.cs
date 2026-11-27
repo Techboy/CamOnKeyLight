@@ -135,7 +135,7 @@ namespace CamOnKeyLight.Core.Tests
             RecordingHandler inner = new RecordingHandler(_ => Response(HttpStatusCode.Redirect, "https://evil.example/payload"));
             RedirectGuardHandler guard = new RedirectGuardHandler(inner);
             using HttpClient client = new HttpClient(guard);
-            Assert.Throws<InvalidOperationException>(() => client.GetAsync(UpdateSource.LatestReleaseUri).GetAwaiter().GetResult());
+            Assert.Throws<InvalidOperationException>(() => client.GetAsync(UpdateSource.LatestReleaseUri, TestContext.Current.CancellationToken).GetAwaiter().GetResult());
             Assert.DoesNotContain(inner.Urls, url => url.Host.Equals("evil.example", StringComparison.OrdinalIgnoreCase));
         }
 
@@ -157,7 +157,7 @@ namespace CamOnKeyLight.Core.Tests
                 return response;
             });
             using HttpClient client = new HttpClient(inner);
-            Assert.Throws<InvalidDataException>(() => LimitedDownloader.ReadAsync(client, UpdateSource.LatestReleaseUri, 10, CancellationToken.None).GetAwaiter().GetResult());
+            Assert.Throws<InvalidDataException>(() => LimitedDownloader.ReadAsync(client, UpdateSource.LatestReleaseUri, 10, TestContext.Current.CancellationToken).GetAwaiter().GetResult());
         }
 
         [Fact]
@@ -238,6 +238,7 @@ namespace CamOnKeyLight.Core.Tests
         }
 
         [Fact]
+        [Trait("Category", "Package")]
         public void PublishedOutputMatchesPackageRules()
         {
             string? directory = Environment.GetEnvironmentVariable("AUTOKEYLIGHT_PUBLISH_DIR");
@@ -251,6 +252,7 @@ namespace CamOnKeyLight.Core.Tests
         }
 
         [Fact]
+        [Trait("Category", "Package")]
         public void LegacyPublishedOutputMatchesPackageRules()
         {
             string? directory = Environment.GetEnvironmentVariable("AUTOKEYLIGHT_LEGACY_PUBLISH_DIR");
