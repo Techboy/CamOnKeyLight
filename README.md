@@ -188,6 +188,25 @@ Use this when the PC cannot reach the lights on the home LAN, for example while 
 
 With the relay address left empty, none of this runs. Timeouts, status text and the network calls stay as they are today.
 
+```mermaid
+flowchart LR
+    subgraph Laptop["Work laptop (on VPN)"]
+        Cam["Webcam turns on"] --> App["Cam on Key Light app"]
+    end
+
+    App -. "1. Direct try on port 9123 (blocked by VPN)" .-x Light
+
+    App -- "2. HTTPS with Access service token" --> CF["Cloudflare Access<br/>lights.example.com"]
+    CF -- "Cloudflare Tunnel" --> Tunnel["cloudflared on home NAS"]
+
+    subgraph Home["Home network"]
+        Tunnel --> Relay["Relay container<br/>(checks shared secret)"]
+        Relay -- "Local HTTP on port 9123" --> Light["Elgato Key Light"]
+    end
+```
+
+The app always tries the light directly first. If a VPN blocks that, it sends the on/off request to your relay hostname over HTTPS. Cloudflare Access only lets it through with the service token, and the Cloudflare Tunnel carries it to the relay container on your home network, which checks the shared secret and switches the light locally.
+
 The relay is a small web service in `relay/`. It only forwards to the light addresses you list. It does not accept an arbitrary URL. Cloudflare Access authenticates the PC with a service token. An optional shared secret is checked again on the NAS.
 
 The container listens on port 8080. These are the paths:
