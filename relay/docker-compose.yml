@@ -1,7 +1,7 @@
 # Home relay for Cam On Key Light.
 # Synology Container Manager can import this file. Use the host network so the
 # container can reach the lights, and so a Cloudflare tunnel on the NAS can use
-# http://127.0.0.1:8080.
+# http://127.0.0.1:8080 (or the port set in ASPNETCORE_URLS).
 #
 # Replace the placeholder values. Do not commit a real secret.
 
@@ -11,6 +11,9 @@ services:
     restart: unless-stopped
     network_mode: host
     environment:
+      # Uncomment both lines if port 8080 is already in use on the NAS.
+      # HTTP_PORTS: ""
+      # ASPNETCORE_URLS: "http://0.0.0.0:8091"
       LIGHTS: "192.168.1.5,192.168.1.6"
       RELAY_SHARED_SECRET: "replace-with-a-long-random-string"
       DISCOVER: "false"

@@ -209,7 +209,7 @@ The app always tries the light directly first. If a VPN blocks that, it sends th
 
 The relay is a small web service in `relay/`. It only forwards to the light addresses you list. It does not accept an arbitrary URL. Cloudflare Access authenticates the PC with a service token. An optional shared secret is checked again on the NAS.
 
-The container listens on port 8080. These are the paths:
+The container listens on port 8080 unless you change it (see [NAS container](#nas-container)). These are the paths:
 
 | Method | Path | What it does |
 | --- | --- | --- |
@@ -231,14 +231,30 @@ LCARS is an x86-64 Synology. The image is built for `linux/amd64` and `linux/arm
 1. Put the lights in `LIGHTS`, separated by commas. `192.168.1.5` means port 9123. Add `:port` only when a light is not on 9123.
 2. Set `RELAY_SHARED_SECRET` to a long random string. Leave it unset only if you are content with Cloudflare Access as the only check.
 3. Leave `DISCOVER` at `false` unless you want the container to look for `_elg._tcp.local` on the LAN. Discovery needs the host network. Addresses you listed are kept either way.
-4. Use the host network. The process then listens on port 8080 of the NAS, and it can open connections to the lights. Do not forward port 8080 from the router.
+4. Use the host network so the container can open connections to the lights. The relay listens on port 8080 of the NAS by default. If something else on the NAS already uses 8080 (the log then shows "Address in use"), pick a free port such as 8091 and set `ASPNETCORE_URLS` to `http://0.0.0.0:8091`. Also set `HTTP_PORTS` to an empty string, otherwise the log shows a harmless warning that `HTTP_PORTS` is being overridden and Container Manager marks the container with a warning. Use `0.0.0.0` rather than `127.0.0.1` if `cloudflared` runs in a separate container or on another machine. Do not forward the relay port from the router.
 5. Set the restart policy to always, or `unless-stopped` as in the compose file.
-6. On the NAS, `http://127.0.0.1:8080/health` should return `{"status":"ok"}`.
+6. On the NAS, `curl http://127.0.0.1:8080/health` (or your chosen port) should return `{"status":"ok"}`.
+
+A working compose file on a NAS where 8080 is already taken looks like this:
+
+```yaml
+services:
+  relay:
+    image: ghcr.io/techboy/camonkeylight-relay:latest
+    network_mode: host
+    restart: unless-stopped
+    environment:
+      HTTP_PORTS: ""
+      ASPNETCORE_URLS: "http://0.0.0.0:8091"
+      LIGHTS: "192.168.1.5,192.168.1.6"
+      RELAY_SHARED_SECRET: "replace-with-a-long-random-string"
+      DISCOVER: "false"
+```
 
 ### Cloudflare Tunnel
 
 1. In the Cloudflare Zero Trust dashboard, open **Networks** → **Tunnels** and create a tunnel. Install `cloudflared` on the NAS with the token the dashboard shows. A second Container Manager container running `cloudflare/cloudflared` with that token is enough. Give that container the host network as well, so it can reach `127.0.0.1:8080`.
-2. Add a public hostname. The subdomain is yours, for example `lights`, on a domain Cloudflare already hosts. The service type is **HTTP**. The URL is `http://127.0.0.1:8080`. Leave the path empty. Save the hostname.
+2. Add a public hostname. The subdomain is yours, for example `lights`, on a domain Cloudflare already hosts. The service type is **HTTP**. The URL is `http://127.0.0.1:8080`, or the port you chose. If the tunnel has more than one `cloudflared` replica, or `cloudflared` is not on the host network, use the NAS's LAN address instead, for example `http://192.168.1.11:8091`, so every replica can reach the relay. Otherwise some requests fail with 502. Leave the path empty. Save the hostname.
 
 ### Cloudflare Access service token
 
