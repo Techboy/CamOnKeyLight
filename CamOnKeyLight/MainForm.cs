@@ -838,9 +838,10 @@ namespace CamOnKeyLight
             about.ShowDialog(this);
         }
 
-        private void helpElgato_Click(object sender, EventArgs e)
+        private void helpLink_Click(object sender, EventArgs e)
         {
-            Program.OpenElgatoWebsite();
+            if (sender is ToolStripItem item && item.Tag is string url)
+                ProjectLinks.Open(url);
         }
 
         private void SizeLightColumns()
