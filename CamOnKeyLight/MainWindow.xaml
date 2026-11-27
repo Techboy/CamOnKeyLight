@@ -5,6 +5,8 @@
         Title="Cam On Key Light"
         Width="780" Height="860" MinWidth="680" MinHeight="560"
         WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource WindowBackgroundBrush}"
+        Foreground="{DynamicResource TextBrush}"
         Icon="pack://application:,,,/Resources/Icon.ico">
   <Window.Resources>
     <Style x:Key="LightCardStyle" TargetType="ListBoxItem">
@@ -58,7 +60,7 @@
         </StackPanel>
       </DockPanel>
     </Border>
-    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Background="{DynamicResource WindowBackgroundBrush}">
       <StackPanel Margin="22">
         <Border CornerRadius="16" Padding="22,20" Margin="0,0,0,16" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Background="{DynamicResource CardBrush}">
           <StackPanel>

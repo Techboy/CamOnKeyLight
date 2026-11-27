@@ -3,6 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Keyboard shortcuts" Width="520" SizeToContent="Height" ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner" PreviewKeyDown="Window_PreviewKeyDown"
+        Background="{DynamicResource WindowBackgroundBrush}"
+        Foreground="{DynamicResource TextBrush}"
         Icon="pack://application:,,,/Resources/Icon.ico">
   <StackPanel Margin="18">
     <TextBlock Style="{StaticResource Hint}" Margin="0,0,0,12"

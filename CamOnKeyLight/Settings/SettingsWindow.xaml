@@ -4,6 +4,8 @@
         xmlns:local="clr-namespace:CamOnKeyLight"
         Title="Settings" Width="960" Height="680" MinWidth="760" MinHeight="520"
         WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource WindowBackgroundBrush}"
+        Foreground="{DynamicResource TextBrush}"
         Icon="pack://application:,,,/Resources/Icon.ico">
   <DockPanel>
     <Border DockPanel.Dock="Bottom" Background="{DynamicResource MenuBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="16,12">
@@ -24,7 +26,7 @@
         </StackPanel>
       </DockPanel>
     </Border>
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24,22,24,16">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24,22,24,16" Background="{DynamicResource WindowBackgroundBrush}">
       <Grid>
         <StackPanel x:Name="QuietPage">
           <TextBlock Text="Quiet hours" FontSize="22" FontWeight="SemiBold" Margin="0,0,0,8"/>
