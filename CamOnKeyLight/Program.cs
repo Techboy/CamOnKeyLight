@@ -45,13 +45,5 @@ namespace CamOnKeyLight
             ApplicationConfiguration.Initialize();
             Application.Run(new MainForm(args));
         }
-
-        public static void OpenElgatoWebsite()
-        {
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://www.elgato.com/")
-            {
-                UseShellExecute = true
-            });
-        }
     }
 }

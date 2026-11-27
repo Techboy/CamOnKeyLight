@@ -15,24 +15,32 @@ namespace CamOnKeyLight
                 "It is not made, sold, or endorsed by Elgato.\r\n\r\n" +
                 "MIT License\r\nCopyright (c) 2022 Gabriel Garcia",
                 LogicalWidth);
-            LinkLabel link = new LinkLabel
-            {
-                AutoSize = true,
-                Text = "https://www.elgato.com/",
-                TabStop = true,
-                LinkBehavior = LinkBehavior.HoverUnderline,
-                Margin = new Padding(0, 8, 0, 0)
-            };
-            link.LinkClicked += (_, _) => Program.OpenElgatoWebsite();
+            LinkLabel github = WebsiteLink("GitHub project", ProjectLinks.GitHubProject);
+            LinkLabel elgato = WebsiteLink(ProjectLinks.ElgatoWebsite, ProjectLinks.ElgatoWebsite);
             Button close = DialogShell.CommandButton("Close", DialogResult.OK);
             AcceptButton = close;
             CancelButton = close;
 
             DialogShell.AddRow(table, body, new Padding(0, 0, 0, 8));
-            DialogShell.AddRow(table, link, new Padding(0, 0, 0, 4));
+            DialogShell.AddRow(table, github, new Padding(0, 0, 0, 4));
+            DialogShell.AddRow(table, elgato, new Padding(0, 0, 0, 4));
             DialogShell.AddRow(table, DialogShell.ButtonRow(LogicalWidth, close), Padding.Empty);
             Controls.Add(table);
             ResumeLayout(true);
+        }
+
+        private static LinkLabel WebsiteLink(string text, string url)
+        {
+            LinkLabel link = new LinkLabel
+            {
+                AutoSize = true,
+                Text = text,
+                TabStop = true,
+                LinkBehavior = LinkBehavior.HoverUnderline,
+                Margin = new Padding(0, 8, 0, 0)
+            };
+            link.LinkClicked += (_, _) => ProjectLinks.Open(url);
+            return link;
         }
     }
 }

@@ -82,7 +82,7 @@ Closing the window hides it and leaves the app running. Double-click the icon to
 
 **Auto**, **On** and **Off** are in the window and on the tray menu. The choice is saved for this Windows user. The window title, the line under those choices, and the tick on the tray menu show which one is selected. The tray icon shows the camera, not the mode.
 
-**Help** contains **About Cam On Key Light** and a link to the Elgato website. **Options** on the menu bar opens the extra settings.
+**Help** contains **Documentation**, **Report an issue**, **Release notes** and **GitHub project**, which open this project's pages in the browser, and a link to the Elgato website. **About Cam On Key Light** is last, after a separator. **About** links to the GitHub project and to the Elgato website. **Options** on the menu bar opens the extra settings.
 
 ## Lights
 

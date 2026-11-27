@@ -20,8 +20,13 @@
             menuMain = new MenuStrip();
             menuOptions = new ToolStripMenuItem();
             menuHelp = new ToolStripMenuItem();
-            helpAbout = new ToolStripMenuItem();
+            helpDocumentation = new ToolStripMenuItem();
+            helpReportIssue = new ToolStripMenuItem();
+            helpReleaseNotes = new ToolStripMenuItem();
+            helpGitHub = new ToolStripMenuItem();
             helpElgato = new ToolStripMenuItem();
+            helpSeparator = new ToolStripSeparator();
+            helpAbout = new ToolStripMenuItem();
             lvLights = new ListView();
             colLight = new ColumnHeader();
             colDescription = new ColumnHeader();
@@ -104,10 +109,55 @@
             // 
             // menuHelp
             // 
-            menuHelp.DropDownItems.AddRange(new ToolStripItem[] { helpAbout, helpElgato });
+            menuHelp.DropDownItems.AddRange(new ToolStripItem[] { helpDocumentation, helpReportIssue, helpReleaseNotes, helpGitHub, helpElgato, helpSeparator, helpAbout });
             menuHelp.Name = "menuHelp";
             menuHelp.Size = new Size(44, 20);
             menuHelp.Text = "&Help";
+            // 
+            // helpDocumentation
+            // 
+            helpDocumentation.Name = "helpDocumentation";
+            helpDocumentation.Size = new Size(180, 22);
+            helpDocumentation.Tag = ProjectLinks.Documentation;
+            helpDocumentation.Text = "&Documentation";
+            helpDocumentation.Click += helpLink_Click;
+            // 
+            // helpReportIssue
+            // 
+            helpReportIssue.Name = "helpReportIssue";
+            helpReportIssue.Size = new Size(180, 22);
+            helpReportIssue.Tag = ProjectLinks.ReportIssue;
+            helpReportIssue.Text = "&Report an issue";
+            helpReportIssue.Click += helpLink_Click;
+            // 
+            // helpReleaseNotes
+            // 
+            helpReleaseNotes.Name = "helpReleaseNotes";
+            helpReleaseNotes.Size = new Size(180, 22);
+            helpReleaseNotes.Tag = ProjectLinks.ReleaseNotes;
+            helpReleaseNotes.Text = "Release &notes";
+            helpReleaseNotes.Click += helpLink_Click;
+            // 
+            // helpGitHub
+            // 
+            helpGitHub.Name = "helpGitHub";
+            helpGitHub.Size = new Size(180, 22);
+            helpGitHub.Tag = ProjectLinks.GitHubProject;
+            helpGitHub.Text = "&GitHub project";
+            helpGitHub.Click += helpLink_Click;
+            // 
+            // helpElgato
+            // 
+            helpElgato.Name = "helpElgato";
+            helpElgato.Size = new Size(180, 22);
+            helpElgato.Tag = ProjectLinks.ElgatoWebsite;
+            helpElgato.Text = "&Elgato website";
+            helpElgato.Click += helpLink_Click;
+            // 
+            // helpSeparator
+            // 
+            helpSeparator.Name = "helpSeparator";
+            helpSeparator.Size = new Size(177, 6);
             // 
             // helpAbout
             // 
@@ -115,13 +165,6 @@
             helpAbout.Size = new Size(180, 22);
             helpAbout.Text = "&About Cam On Key Light";
             helpAbout.Click += helpAbout_Click;
-            // 
-            // helpElgato
-            // 
-            helpElgato.Name = "helpElgato";
-            helpElgato.Size = new Size(180, 22);
-            helpElgato.Text = "&Elgato website";
-            helpElgato.Click += helpElgato_Click;
             // 
             // lvLights
             // 
@@ -605,8 +648,13 @@
         private MenuStrip menuMain;
         private ToolStripMenuItem menuOptions;
         private ToolStripMenuItem menuHelp;
-        private ToolStripMenuItem helpAbout;
+        private ToolStripMenuItem helpDocumentation;
+        private ToolStripMenuItem helpReportIssue;
+        private ToolStripMenuItem helpReleaseNotes;
+        private ToolStripMenuItem helpGitHub;
         private ToolStripMenuItem helpElgato;
+        private ToolStripSeparator helpSeparator;
+        private ToolStripMenuItem helpAbout;
         private ListView lvLights;
         private ColumnHeader colLight;
         private ColumnHeader colDescription;
