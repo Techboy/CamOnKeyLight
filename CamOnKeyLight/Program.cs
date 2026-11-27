@@ -1,3 +1,4 @@
+using System.Windows;
 using CamOnKeyLight.Core;
 
 namespace CamOnKeyLight
@@ -7,7 +8,7 @@ namespace CamOnKeyLight
         private static Mutex? instanceMutex;
 
         [STAThread]
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             if (UpdateInstaller.IsApplyRequest(args))
             {
@@ -42,16 +43,19 @@ namespace CamOnKeyLight
             {
             }
 
-            ApplicationConfiguration.Initialize();
-            Application.Run(new MainForm(args));
-        }
+            System.Windows.Forms.Application.EnableVisualStyles();
+            System.Windows.Forms.Application.SetCompatibleTextRenderingDefault(false);
 
-        public static void OpenElgatoWebsite()
-        {
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://www.elgato.com/")
-            {
-                UseShellExecute = true
-            });
+            App app = new App();
+            app.InitializeComponent();
+            BrandTheme.Apply(EffectiveTheme.Dark);
+            MainWindow window = new MainWindow(args);
+            app.MainWindow = window;
+            window.Start();
+            if (!window.StartHidden)
+                window.Show();
+            app.Run();
+            instanceMutex?.Dispose();
         }
     }
 }

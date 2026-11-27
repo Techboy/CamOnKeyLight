@@ -288,7 +288,7 @@ namespace CamOnKeyLight.Core.Tests
             Assert.Contains("<Setting Name=\"LightMode\"", settings, StringComparison.Ordinal);
             Assert.Contains(">Auto<", settings, StringComparison.Ordinal);
             Assert.Contains("<Setting Name=\"Theme\"", settings, StringComparison.Ordinal);
-            Assert.Contains(">FollowWindows<", settings, StringComparison.Ordinal);
+            Assert.Contains(">Dark<", settings, StringComparison.Ordinal);
             Assert.Contains("<Setting Name=\"AutomaticUpdates\"", settings, StringComparison.Ordinal);
             Assert.Contains(">True<", settings, StringComparison.Ordinal);
             Assert.Contains("<Setting Name=\"HotkeyAuto\"", settings, StringComparison.Ordinal);

@@ -20,9 +20,11 @@ Buying an Elgato light? Sign up through my [TopCashback referral link](https://w
 
 ## How it looks
 
-The main window lists each light's address, description, group and status. **Add**, **Edit**, **Remove**, **Retry** and **Find** sit under that list. The lines below show whether the camera is on and whether the lights are on, and the rest of the window holds the delays, Auto / On / Off, sign-in, appearance and updates. **Options** and **Help** are on the menu bar.
+The main window is a dark status dashboard. A hero line says whether the lights are on or off and why, for example **Lights are off** / **because your camera is off**, with a pill such as **Auto: lights follow the camera**. Each light is a card with its name, address, group and an on/off pill. **Add light**, **Find lights** and **Retry** sit under the cards. **Auto / On / Off** is a segmented control, and the delays are in seconds. **Settings** and **Help** are in the header. The footer links to documentation, issues, releases and About.
 
-![Cam On Key Light main window, version 0.7.0, in light mode](docs/camonkeylight-main-window.png)
+The pictures in this guide still show the previous window. They need replacing with captures of this dashboard. A pull request build uploads new captures as the `ui-screenshots` artifact when the Windows runner can draw a window.
+
+![Previous main window, version 0.7.0. This picture still needs a capture of the new dashboard.](docs/camonkeylight-main-window.png)
 
 ## Features
 
@@ -32,7 +34,7 @@ The main window lists each light's address, description, group and status. **Add
 - Optional descriptions and groups. From the tray, a group can be switched on or off, or set to 25, 50, 75 or 100 percent brightness.
 - Quiet hours, and a choice of which camera apps count.
 - Optional keyboard shortcuts for Auto, On and Off.
-- Light, Dark, or Follow Windows.
+- Dark (the default for a new install), Light, or System. A choice you already saved is kept. System is the saved value `FollowWindows`.
 - A per-user installer and a portable zip. Updates come from the stable releases of this project.
 - Starts when you sign in, if you tick that option.
 
@@ -80,17 +82,17 @@ Open **Cam On Key Light** from the Start menu, or run `CamOnKeyLight.exe`. The a
 
 Closing the window hides it and leaves the app running. Double-click the icon to open the window again. **Exit** on the tray menu quits. If you start the app while it is already running, the second start does nothing.
 
-**Auto**, **On** and **Off** are in the window and on the tray menu. The choice is saved for this Windows user. The window title, the line under those choices, and the tick on the tray menu show which one is selected. The tray icon shows the camera, not the mode.
+**Auto**, **On** and **Off** are in the window and on the tray menu. The choice is saved for this Windows user. The window title, the pill under the hero line, and the tick on the tray menu show which one is selected. The tray icon shows the camera, not the mode.
 
-**Help** contains **About Cam On Key Light** and a link to the Elgato website. **Options** on the menu bar opens the extra settings.
+**Help** contains **Documentation**, **Report an issue**, **Release notes** and **GitHub project**, which open this project's pages in the browser, and a link to the Elgato website. **About Cam On Key Light** is last, after a separator. The same documentation, issue and release links, plus About, are along the bottom of the main window. **About** also links to the GitHub project and to the Elgato website. **Settings** in the header, and **Settings…** on the tray, opens the extra settings.
 
 ## Lights
 
-The list columns are Light, Description, Group and Status.
+Each card shows the description (or the address, if you have not named it), the address, the group and the status.
 
-- **Add** or **Edit** asks for an address, a description and an optional group. You can also double-click a row, or press Enter or F2. Delete removes the selected light.
+- **Add light** or **Edit** asks for an address, a description and an optional group. **Edit** is on the card's action button. You can also double-click a card, or press Enter or F2. Delete removes the selected light.
 - An address is the light's IP, for example `192.168.1.5`. Add `:port` only when the light is not on port 9123.
-- **Find** on the window, and **Find lights…** on the tray, searches the local network for Elgato lights (`_elg._tcp.local`). The dialog lists the name, address and port. Lights already in the list are skipped. If none answer, the dialog says so.
+- **Find lights** on the window, and **Find lights…** on the tray, searches the local network for Elgato lights (`_elg._tcp.local`). The dialog lists the name, address and port. Lights already in the list are skipped. If none answer, the dialog says so.
 - A light added from Find remembers its name and serial. If that address later stops responding, then after about 20 seconds the app looks for the same light and updates the address when the match is unique.
 - On startup, and again after Add or Edit, the app reads any addresses stored by Elgato Control Center. If a removed address comes back, see [Troubleshooting](#troubleshooting).
 - **Retry** checks every light again. A light that does not answer within 5 seconds is shown as Unreachable. The check only asks the light for its status.
@@ -98,15 +100,15 @@ The list columns are Light, Description, Group and Status.
 
 The description is saved with the address, for example "Light on the left". A group name is shown in the list. Once any light has a group, the tray **Groups** menu can turn that group on or off, or set its brightness to 25, 50, 75 or 100 percent. Lights with no group are listed there as Ungrouped.
 
-Automatic on and off follows the camera for every light, unless Options limits that to chosen groups. Lights with no group follow the camera only when every group does.
+Automatic on and off follows the camera for every light, unless Settings limits that to chosen groups. Lights with no group follow the camera only when every group does.
 
 ## Timing
 
-Both boxes are in milliseconds, and both apply only in **Auto**.
+Both boxes are shown in seconds, in steps of 0.1, and both apply only in **Auto**. The settings file still stores milliseconds, so a value saved by an older version still loads. The window does not rewrite that value until you change the box. 1500 ms is shown as 1.5 seconds.
 
-**On delay (ms)** is how long the camera has to stay on before the lights turn on. A new install uses 0. The maximum is 10 seconds (10000).
+**Turn on after** is how long the camera has to stay on before the lights turn on. A new install uses 0. The maximum is 10 seconds.
 
-**Off delay (ms)** is the pause after the camera turns off, so switching camera apps does not flicker the lights. A new install uses 1500. If you already saved a value, including 0, that saved value is kept. The maximum is 60 seconds (60000). Set it to 0 for an immediate automatic off. If the camera comes back before the delay ends, the pending off is dropped and the lights stay as they were.
+**Turn off after** is the pause after the camera turns off, so switching camera apps does not flicker the lights. A new install uses 1.5 seconds. If you already saved a value, including 0, that saved value is kept. The maximum is 60 seconds. Set it to 0 for an immediate automatic off. If the camera comes back before the delay ends, the pending off is dropped and the lights stay as they were.
 
 **On** and **Off** apply as soon as you choose them. Manual Off does not wait for the off delay.
 
@@ -126,9 +128,11 @@ Open **Shortcuts** from the window or the tray menu. Choose Set, then press Ctrl
 
 The shortcut works while the window is closed. The tray menu shows it next to Auto, On or Off. Common editing and Windows shortcuts, such as Ctrl+C and Alt+F4, are refused, and the Windows key is refused too. If Windows says another program already owns the shortcut, the app tells you and leaves the previous shortcut in place. Shortcuts are released when you exit from the tray menu.
 
-## Options
+## Settings
 
-**Options** on the menu bar, and **Options…** on the tray, holds the settings that are not on the main window. The Relay tab is optional. Leave it empty unless you use the [home relay](#home-relay).
+**Settings** in the header, and **Settings…** on the tray, holds the settings that are not on the main window. A list on the left opens Quiet hours, Camera apps, Groups, Notifications, Home relay and About. **Save changes** keeps them. Home relay is optional. Leave **Use a home relay** off unless you use the [home relay](#home-relay). Turning that switch off and saving clears the saved relay address. The secrets file is kept.
+
+The settings pictures below are still the previous tabbed window.
 
 ### Quiet hours
 
@@ -158,7 +162,7 @@ While quiet hours are active, automatic mode does not turn lights on. On and Off
 
 ## Appearance
 
-Choose **Light**, **Dark** or **Follow Windows**. The choice is saved. Follow Windows matches the Windows app theme. While Windows high contrast is on, the app keeps the Windows system colours.
+Choose **Dark**, **Light** or **System**. A new install uses Dark. A choice you already saved is kept, including Follow Windows, which is what **System** stores. System matches the Windows app theme. The light theme uses the same warm gold on a paper background. While Windows high contrast is on, the app keeps the Windows system colours.
 
 ## Settings
 
@@ -256,7 +260,7 @@ curl -H "CF-Access-Client-Id: YOUR_CLIENT_ID" \
 
 ### App settings
 
-Open **Options** → **Relay**.
+Open **Settings** → **Home relay** and turn on **Use a home relay**.
 
 ![Relay options, with empty Relay URL, Access client ID, Access client secret and Shared secret boxes, and a Test relay button](docs/camonkeylight-options-relay.png)
 
@@ -264,7 +268,7 @@ Open **Options** → **Relay**.
 2. Access client ID: the Client ID from the service token.
 3. Access client secret: the Client Secret from the service token.
 4. Shared secret: the same string as `RELAY_SHARED_SECRET`. Leave it empty only when the container has no shared secret.
-5. Press **Test relay**. A working setup says the relay answered and how many lights are configured. The test does not switch the lights. **OK** saves the address in `user-settings.json` and the three credential fields in `relay-secrets.bin`.
+5. Press **Test relay**. A working setup says the relay answered and how many lights are configured. The test does not switch the lights. **Save changes** writes the address in `user-settings.json` and the three credential fields in `relay-secrets.bin`. The two secrets are masked until you press **Show**.
 
 The window shows **via relay** on a light, and in the lights summary, while that path is in use. The tray tip gains a relay note when it still fits. After you disconnect the VPN, the next successful direct check drops the note.
 
@@ -282,7 +286,7 @@ If you can reserve an address for the light on your router, it keeps the same IP
 
 **The status says On via relay or Off via relay.** The app could not reach that light directly, so it used the home relay. On the local network, with the VPN disconnected, the status goes back to On or Off with no relay note.
 
-**The lights flicker when one camera app takes over from another.** Raise **Off delay**. A new install uses 1500 ms, which is there for that gap.
+**The lights flicker when one camera app takes over from another.** Raise **Turn off after**. A new install uses 1.5 seconds, which is there for that gap.
 
 **The lights stay off during a call.** Confirm the mode is **Auto**, quiet hours are not active, and **Camera apps** is not set to ignore the program you are in. The camera line follows Windows: it is on when an app is streaming from the camera.
 

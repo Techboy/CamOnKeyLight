@@ -41,43 +41,58 @@ namespace CamOnKeyLight.Core
         ThemeColor MenuForeground,
         ThemeColor MenuHighlight,
         ThemeColor MenuHighlightText,
-        ThemeColor Link)
+        ThemeColor Link,
+        ThemeColor Card,
+        ThemeColor Accent,
+        ThemeColor AccentText)
     {
+        /// <summary>
+        /// Warm paper and a darker key-light gold, so gold text stays readable.
+        /// </summary>
         public static ThemePalette Light { get; } = new(
-            Background: ThemeColor.FromHex(0xF3F3F3),
-            Foreground: ThemeColor.FromHex(0x202020),
-            InputBackground: ThemeColor.FromHex(0xFFFFFF),
-            InputForeground: ThemeColor.FromHex(0x202020),
-            ButtonBackground: ThemeColor.FromHex(0xE4E4E4),
-            ButtonForeground: ThemeColor.FromHex(0x202020),
-            StatusOn: ThemeColor.FromHex(0x0E6A32),
+            Background: ThemeColor.FromHex(0xF7F4EE),
+            Foreground: ThemeColor.FromHex(0x1A1408),
+            InputBackground: ThemeColor.FromHex(0xFFFDF8),
+            InputForeground: ThemeColor.FromHex(0x1A1408),
+            ButtonBackground: ThemeColor.FromHex(0xEFE6D4),
+            ButtonForeground: ThemeColor.FromHex(0x1A1408),
+            StatusOn: ThemeColor.FromHex(0x0D6B45),
             StatusOff: ThemeColor.FromHex(0x9F1D1D),
             Error: ThemeColor.FromHex(0x9F1D1D),
-            Muted: ThemeColor.FromHex(0x3E3E3E),
-            Border: ThemeColor.FromHex(0x6E6E6E),
-            MenuBackground: ThemeColor.FromHex(0xFFFFFF),
-            MenuForeground: ThemeColor.FromHex(0x202020),
-            MenuHighlight: ThemeColor.FromHex(0xD6E4F5),
-            MenuHighlightText: ThemeColor.FromHex(0x202020),
-            Link: ThemeColor.FromHex(0x0B4F9C));
+            Muted: ThemeColor.FromHex(0x5C564C),
+            Border: ThemeColor.FromHex(0xC9BFAE),
+            MenuBackground: ThemeColor.FromHex(0xF3EFE6),
+            MenuForeground: ThemeColor.FromHex(0x1A1408),
+            MenuHighlight: ThemeColor.FromHex(0xF5B942),
+            MenuHighlightText: ThemeColor.FromHex(0x1A1408),
+            Link: ThemeColor.FromHex(0x7A5208),
+            Card: ThemeColor.FromHex(0xFFFDF8),
+            Accent: ThemeColor.FromHex(0xF5B942),
+            AccentText: ThemeColor.FromHex(0x1A1408));
 
+        /// <summary>
+        /// Dark status dashboard. The accent is the warm key-light gold.
+        /// </summary>
         public static ThemePalette Dark { get; } = new(
-            Background: ThemeColor.FromHex(0x1F1F1F),
-            Foreground: ThemeColor.FromHex(0xF2F2F2),
-            InputBackground: ThemeColor.FromHex(0x2C2C2C),
-            InputForeground: ThemeColor.FromHex(0xF2F2F2),
-            ButtonBackground: ThemeColor.FromHex(0x3C3C3C),
-            ButtonForeground: ThemeColor.FromHex(0xF2F2F2),
-            StatusOn: ThemeColor.FromHex(0x7DFFB3),
-            StatusOff: ThemeColor.FromHex(0xFFB3B0),
-            Error: ThemeColor.FromHex(0xFFB3B0),
-            Muted: ThemeColor.FromHex(0xD0D0D0),
-            Border: ThemeColor.FromHex(0x8A8A8A),
-            MenuBackground: ThemeColor.FromHex(0x2C2C2C),
-            MenuForeground: ThemeColor.FromHex(0xF2F2F2),
-            MenuHighlight: ThemeColor.FromHex(0x355F8A),
-            MenuHighlightText: ThemeColor.FromHex(0xF2F2F2),
-            Link: ThemeColor.FromHex(0x9ECAFF));
+            Background: ThemeColor.FromHex(0x16161B),
+            Foreground: ThemeColor.FromHex(0xF4F1EA),
+            InputBackground: ThemeColor.FromHex(0x141418),
+            InputForeground: ThemeColor.FromHex(0xF4F1EA),
+            ButtonBackground: ThemeColor.FromHex(0x23232A),
+            ButtonForeground: ThemeColor.FromHex(0xF4F1EA),
+            StatusOn: ThemeColor.FromHex(0x5DCAA5),
+            StatusOff: ThemeColor.FromHex(0xFFB4AB),
+            Error: ThemeColor.FromHex(0xFFB4AB),
+            Muted: ThemeColor.FromHex(0xB7B3AB),
+            Border: ThemeColor.FromHex(0x3A3A44),
+            MenuBackground: ThemeColor.FromHex(0x141418),
+            MenuForeground: ThemeColor.FromHex(0xF4F1EA),
+            MenuHighlight: ThemeColor.FromHex(0xF5B942),
+            MenuHighlightText: ThemeColor.FromHex(0x1A1408),
+            Link: ThemeColor.FromHex(0xF5B942),
+            Card: ThemeColor.FromHex(0x1E1E25),
+            Accent: ThemeColor.FromHex(0xF5B942),
+            AccentText: ThemeColor.FromHex(0x1A1408));
 
         public IEnumerable<(string Name, ThemeColor Text, ThemeColor Behind)> TextPairs()
         {
@@ -91,6 +106,13 @@ namespace CamOnKeyLight.Core
             yield return ("menu", MenuForeground, MenuBackground);
             yield return ("menu selection", MenuHighlightText, MenuHighlight);
             yield return ("link", Link, Background);
+            yield return ("card text", Foreground, Card);
+            yield return ("muted on card", Muted, Card);
+            yield return ("accent label", AccentText, Accent);
+            yield return ("link on card", Link, Card);
+            yield return ("link on menu", Link, MenuBackground);
+            yield return ("status on card", StatusOn, Card);
+            yield return ("error on card", Error, Card);
         }
     }
 

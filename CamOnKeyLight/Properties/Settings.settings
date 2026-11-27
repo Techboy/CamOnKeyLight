@@ -12,7 +12,7 @@
       <Value Profile="(Default)">1500</Value>
     </Setting>
     <Setting Name="Theme" Type="System.String" Scope="User">
-      <Value Profile="(Default)">FollowWindows</Value>
+      <Value Profile="(Default)">Dark</Value>
     </Setting>
     <Setting Name="AutomaticUpdates" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
