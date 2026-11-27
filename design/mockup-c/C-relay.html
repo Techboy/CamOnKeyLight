@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<title>C — Settings · Home relay</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="dark.css">
+<style>
+.window { width: 860px; }
+.settings { flex: 1; }
+.settings-main { overflow: auto; }
+.stack { display: flex; flex-direction: column; gap: 12px; }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="window">
+    <div class="titlebar">
+      <svg class="app-icon" viewBox="0 0 32 32" aria-hidden="true">
+  <rect width="32" height="32" rx="8" fill="#F5B942"/>
+  <path d="M16 6.2c-3.5 0-6.3 2.7-6.3 6.1 0 2.2 1.1 4.1 2.8 5.3.55.4.95 1.05.95 1.7v.3h5.1v-.3c0-.65.4-1.3.95-1.7 1.7-1.2 2.8-3.1 2.8-5.3 0-3.4-2.8-6.1-6.3-6.1z" fill="#fff"/>
+  <rect x="12.6" y="20.4" width="6.8" height="1.35" rx="0.4" fill="#fff"/>
+  <rect x="13.3" y="22.4" width="5.4" height="1.35" rx="0.4" fill="#fff"/>
+  <rect x="14.2" y="24.4" width="3.6" height="1.5" rx="0.75" fill="#fff"/>
+</svg>
+      <div class="title">Settings</div>
+      <div class="tb-spacer"></div>
+      <div class="captions">
+  <button class="cap min" aria-label="Minimise" tabindex="-1">
+    <svg viewBox="0 0 10 10"><path d="M1 5h8" stroke="currentColor" stroke-width="1" fill="none"/></svg>
+  </button>
+  <button class="cap max" aria-label="Maximise" tabindex="-1">
+    <svg viewBox="0 0 10 10"><rect x="1.5" y="1.5" width="7" height="7" fill="none" stroke="currentColor" stroke-width="1"/></svg>
+  </button>
+  <button class="cap close" aria-label="Close" tabindex="-1">
+    <svg viewBox="0 0 10 10"><path d="M2 2l6 6M8 2l-6 6" stroke="currentColor" stroke-width="1" fill="none"/></svg>
+  </button>
+</div>
+    </div>
+    <div class="settings">
+      <nav class="nav">
+<div class="nav-item"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.25" stroke="currentColor" stroke-width="1.7"/><path d="M12 7.5V12l3 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>Quiet hours</div>
+<div class="nav-item"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="12" height="10" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M15 10.2l5-2.4v8.4l-5-2.4v-3.6z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>Camera apps</div>
+<div class="nav-item"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="4.5" width="7" height="7" rx="1.4" stroke="currentColor" stroke-width="1.7"/><rect x="13.5" y="4.5" width="7" height="7" rx="1.4" stroke="currentColor" stroke-width="1.7"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.4" stroke="currentColor" stroke-width="1.7"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.4" stroke="currentColor" stroke-width="1.7"/></svg>Groups</div>
+<div class="nav-item"><svg viewBox="0 0 24 24" fill="none"><path d="M6 9.5a6 6 0 1 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 13.5 6 9.5z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M10 18.5a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>Notifications</div>
+<div class="nav-item active"><svg viewBox="0 0 24 24" fill="none"><path d="M4 11L12 4.2 20 11v8.3a1 1 0 0 1-1 1h-5.2v-5.4H10.2V20.3H5a1 1 0 0 1-1-1V11z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>Home relay</div>
+<div class="nav-gap"></div>
+<div class="nav-item"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.25" stroke="currentColor" stroke-width="1.7"/><path d="M12 11v6M12 7.5h.01" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>About</div>
+</nav>
+      <div class="settings-main">
+        <h1>Home relay</h1>
+        <p class="hint">Use a relay when this PC cannot reach your lights directly, for example when you are on a work VPN. The app still tries each light first, and only uses the relay if that fails.</p>
+
+        <div class="card row-between">
+          <div>
+            <div style="font-size:14px;font-weight:650;">Use a home relay</div>
+            <div class="hint" style="margin-top:3px;">Leave this off if the lights are always on the same network as this PC.</div>
+          </div>
+          <button class="switch on" role="switch" aria-checked="true"><span class="thumb"></span></button>
+        </div>
+
+        <div class="card stack">
+          <div class="group-title">Connection</div>
+          <div class="field">
+            <div class="label">Relay address</div>
+            <div class="sub">The public HTTPS address of your relay, such as https://lights.example.com</div>
+            <input class="text-input" type="text" value="https://lights.example.com" readonly>
+          </div>
+        </div>
+
+        <div class="card stack">
+          <div class="group-title">Cloudflare Access</div>
+          <p class="hint">Only needed if your relay is protected by a Cloudflare Access service token.</p>
+          <div class="field">
+            <div class="label">Access client ID</div>
+            <input class="text-input" type="text" value="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.access" readonly>
+          </div>
+          <div class="field">
+            <div class="label">Access client secret</div>
+            <div class="input-wrap">
+              <input class="text-input" type="text" value="••••••••••••••••••••••••••••••••" readonly>
+              <button class="eye" title="Show secret"><svg viewBox="0 0 24 24" fill="none"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.7"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card stack">
+          <div class="group-title">Shared secret</div>
+          <div class="field">
+            <div class="label">Relay shared secret</div>
+            <div class="sub">Must match the shared secret set on the relay container. It is stored with this Windows user only.</div>
+            <div class="input-wrap">
+              <input class="text-input" type="text" value="••••••••••••••••••••" readonly>
+              <button class="eye" title="Show secret"><svg viewBox="0 0 24 24" fill="none"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.7"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="row" style="gap:12px;align-items:stretch;">
+          <button class="btn btn-primary">Test relay</button>
+          <div class="result grow">
+            <div class="ico"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M8 12.3l2.6 2.6L16.2 9.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <div>
+              <strong>Connected</strong>
+              <span>2 lights configured. This test does not switch the lights.</span>
+            </div>
+          </div>
+        </div>
+        <p class="hint"><a class="link" href="#">View the relay guide on GitHub</a></p>
+      </div>
+    </div>
+    <div class="footer-bar">
+      <button class="btn">Cancel</button>
+      <button class="btn btn-primary">Save changes</button>
+    </div>
+  </div>
+</div>
+</body></html>

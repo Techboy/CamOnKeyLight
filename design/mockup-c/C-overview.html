@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<title>Dark status dashboard</title>
+<link rel="stylesheet" href="fonts.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Plus Jakarta Sans, sans-serif;
+    background: #0b0b0d;
+    color: #f4f1ea;
+    -webkit-font-smoothing: antialiased;
+  }
+  .stage {
+    display: inline-block;
+    padding: 36px 40px 32px;
+    background: #0b0b0d;
+  }
+  .board { width: 1280px; }
+  header { margin-bottom: 22px; }
+  .badge {
+    display: inline-block;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 9px; border-radius: 999px;
+    margin-bottom: 8px;
+    background:#F5B942;color:#1a1408;
+  }
+  h1 {
+    font-size: 26px; font-weight: 650; letter-spacing: -0.03em;
+    margin-bottom: 6px;
+  }
+  .blurb {
+    font-size: 14px; color: #9a9690; line-height: 1.5; max-width: 900px;
+  }
+  .row {
+    display: flex; align-items: stretch; gap: 20px;
+  }
+  figure {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 auto;
+  }
+  figure img { margin-top: auto; }
+  figure img {
+    display: block;
+    height: auto;
+  }
+  figcaption {
+    margin-top: 10px;
+    font-size: 13px; font-weight: 600;
+    color: #9a9690;
+    text-align: center;
+  }
+  .a-main img, .c-main img { width: 400px; }
+  .a-relay img, .c-relay img { width: 430px; }
+  .a-about img, .c-about img { width: 300px; }
+  .b-flyout img { width: 500px; }
+  .b-relay img { width: 540px; }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="board">
+    <header>
+      <div class="badge">Direction C</div>
+      <h1>Dark status dashboard</h1>
+      <p class="blurb">A darker, friendlier take with a status-first layout, warm key-light colour, and the same clearer relay settings. Help links to documentation, issues and releases sit in About and on the main window.</p>
+    </header>
+    <div class="row">
+      <figure class="c-main">
+      <img src="../mockups/C-main.png" alt="Main window">
+      <figcaption>Main window</figcaption>
+    </figure>
+<figure class="c-relay">
+      <img src="../mockups/C-relay.png" alt="Settings — Home relay">
+      <figcaption>Settings — Home relay</figcaption>
+    </figure>
+<figure class="c-about">
+      <img src="../mockups/C-about.png" alt="About">
+      <figcaption>About</figcaption>
+    </figure>
+    </div>
+  </div>
+</div>
+</body>
+</html>
