@@ -2,6 +2,9 @@ using System.Text;
 using CamOnKeyLight.Core;
 using CamOnKeyLight.Relay;
 
+if (args.Any(static arg => arg.Equals("--healthcheck", StringComparison.Ordinal)))
+    Environment.Exit(await RelayHealthCheck.ExecuteAsync());
+
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 builder.Logging.AddSimpleConsole(options => options.SingleLine = true);
