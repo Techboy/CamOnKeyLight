@@ -95,9 +95,9 @@ foreach ($required in @("AutoKeyLight.exe", "CamOnKeyLight.dll", "CamOnKeyLight.
 $env:AUTOKEYLIGHT_PUBLISH_DIR = $publish
 $env:AUTOKEYLIGHT_LEGACY_PUBLISH_DIR = $legacy
 Invoke-Native "dotnet" @(
-    "test", "CamOnKeyLight.Core.Tests/CamOnKeyLight.Core.Tests.csproj",
+    "test", "--project", "CamOnKeyLight.Core.Tests/CamOnKeyLight.Core.Tests.csproj",
     "-c", "Release",
-    "--filter", "PublishedOutputMatchesPackageRules|LegacyPublishedOutputMatchesPackageRules"
+    "--filter-trait", "Category=Package"
 ) "Package rule tests"
 
 Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -121,9 +121,9 @@ finally {
     $legacyArchive.Dispose()
 }
 
-$innoUrl = "https://github.com/jrsoftware/issrc/releases/download/is-6_4_3/innosetup-6.4.3.exe"
-$innoSha256 = "f3c42116542c4cc57263c5ba6c4feabfc49fe771f2f98a79d2f7628b8762723b"
-$innoSetup = Join-Path $work "innosetup-6.4.3.exe"
+$innoUrl = "https://github.com/jrsoftware/issrc/releases/download/is-7_1_1/innosetup-7.1.1-x64.exe"
+$innoSha256 = "8a5a6711c3766a6e5fb74f280ba0e3551e719ce94538d901fdbd1f8f9920b3f0"
+$innoSetup = Join-Path $work "innosetup-7.1.1-x64.exe"
 $innoDir = Join-Path $work "innosetup"
 if (!(Test-Path (Join-Path $innoDir "ISCC.exe"))) {
     Invoke-WebRequest -Uri $innoUrl -OutFile $innoSetup

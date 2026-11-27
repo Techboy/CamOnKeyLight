@@ -211,6 +211,16 @@ namespace CamOnKeyLight.Core
         public static readonly TimeSpan DefaultOffDelay = TimeSpan.FromMilliseconds(1500);
 
         public static readonly TimeSpan LightRequestTimeout = TimeSpan.FromSeconds(5);
+
+        /// <summary>
+        /// Used only when a relay is configured. A light on the LAN answers well
+        /// inside this, and a tunnelled address fails quickly enough to fall back.
+        /// </summary>
+        public static readonly TimeSpan DirectAttemptWhenRelayConfigured = TimeSpan.FromMilliseconds(800);
+
+        public static readonly TimeSpan RelayRequestTimeout = TimeSpan.FromSeconds(4);
+
+        public static readonly TimeSpan DirectFailureMemory = TimeSpan.FromSeconds(45);
     }
 
     public static class LightEndpoint

@@ -21,7 +21,7 @@ namespace CamOnKeyLight.Core
         Problems
     }
 
-    public readonly record struct LightRow(string Address, LightLinkState State, string StatusText, string Detail);
+    public readonly record struct LightRow(string Address, LightLinkState State, string StatusText, string Detail, LightRoute Route);
 
     public static class LightDiagnostics
     {
@@ -55,9 +55,19 @@ namespace CamOnKeyLight.Core
             return address + " is off.";
         }
 
-        public static string StatusText(LightLinkState state)
+        public static string RelayUnreachable(string address)
         {
-            return state switch
+            return "Can't reach " + address + " through the home relay.";
+        }
+
+        public static string RelayRefused(string address)
+        {
+            return "The home relay refused the request for " + address + ".";
+        }
+
+        public static string StatusText(LightLinkState state, LightRoute route = LightRoute.Direct)
+        {
+            string text = state switch
             {
                 LightLinkState.On => "On",
                 LightLinkState.Off => "Off",
@@ -67,6 +77,11 @@ namespace CamOnKeyLight.Core
                 LightLinkState.Checking => "Checking…",
                 _ => "Not checked"
             };
+
+            if (route == LightRoute.Relay && state is LightLinkState.On or LightLinkState.Off or LightLinkState.Unreachable)
+                return text + " via relay";
+
+            return text;
         }
     }
 
@@ -80,6 +95,7 @@ namespace CamOnKeyLight.Core
         {
             public int Attempt;
             public LightLinkState State;
+            public LightRoute Route;
             public string Detail = "";
         }
 
@@ -114,6 +130,7 @@ namespace CamOnKeyLight.Core
             Entry entry = Require(address);
             entry.Attempt++;
             entry.State = LightLinkState.Checking;
+            entry.Route = LightRoute.Direct;
             entry.Detail = "Checking " + address + "…";
             return entry.Attempt;
         }
@@ -131,17 +148,18 @@ namespace CamOnKeyLight.Core
             return entry.Attempt;
         }
 
-        public void Report(string address, LightLinkState state, string detail)
+        public void Report(string address, LightLinkState state, string detail, LightRoute route = LightRoute.Direct)
         {
             if (!entries.TryGetValue(address, out Entry? entry))
                 return;
 
             entry.Attempt++;
             entry.State = state;
+            entry.Route = route;
             entry.Detail = detail;
         }
 
-        public bool TryComplete(string address, int attempt, LightLinkState state, string detail)
+        public bool TryComplete(string address, int attempt, LightLinkState state, string detail, LightRoute route = LightRoute.Direct)
         {
             if (!entries.TryGetValue(address, out Entry? entry))
                 return false;
@@ -153,6 +171,7 @@ namespace CamOnKeyLight.Core
                 return false;
 
             entry.State = state;
+            entry.Route = route;
             entry.Detail = detail;
             return true;
         }
@@ -165,7 +184,7 @@ namespace CamOnKeyLight.Core
                 foreach (string address in order)
                 {
                     Entry entry = entries[address];
-                    rows.Add(new LightRow(address, entry.State, LightDiagnostics.StatusText(entry.State), entry.Detail));
+                    rows.Add(new LightRow(address, entry.State, LightDiagnostics.StatusText(entry.State, entry.Route), entry.Detail, entry.Route));
                 }
 
                 return rows;
@@ -234,6 +253,26 @@ namespace CamOnKeyLight.Core
             }
         }
 
+        public bool UsesRelay
+        {
+            get
+            {
+                bool any = false;
+                foreach (LightRow row in Rows)
+                {
+                    if (row.State is LightLinkState.Checking or LightLinkState.Unknown)
+                        continue;
+
+                    if (row.Route != LightRoute.Relay)
+                        return false;
+
+                    any = true;
+                }
+
+                return any;
+            }
+        }
+
         public string Summary
         {
             get
@@ -243,7 +282,7 @@ namespace CamOnKeyLight.Core
                 int off = rows.Count(row => row.State == LightLinkState.Off);
                 int bad = rows.Count(row => row.State is LightLinkState.Unreachable or LightLinkState.UnexpectedReply or LightLinkState.InvalidAddress);
 
-                return Kind switch
+                string text = Kind switch
                 {
                     LightSummaryKind.Empty => "No lights added",
                     LightSummaryKind.AllOn => "Lights are ON",
@@ -253,6 +292,11 @@ namespace CamOnKeyLight.Core
                     LightSummaryKind.Mixed => on + " on, " + off + " off",
                     _ => "Checking lights…"
                 };
+
+                if (UsesRelay && text is not ("No lights added" or "Checking lights…"))
+                    return text + " via relay";
+
+                return text;
             }
         }
 

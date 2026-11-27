@@ -9,7 +9,8 @@ namespace CamOnKeyLight
     {
         private const int WmHotkey = 0x0312;
 
-        private static readonly HttpClient httpClient = CreateLightClient();
+        private readonly LightHttpClient lightHttp = new LightHttpClient();
+        private readonly LightDispatch lightDispatch;
         private readonly Icon trayIconLit;
         private readonly Icon trayIconUnlit;
         private readonly LightModeController controller = new LightModeController(DateTime.UtcNow);
@@ -30,6 +31,7 @@ namespace CamOnKeyLight
         private bool applyingMode;
         private bool applyingStartup;
         private AppUserSettings userSettings = AppUserSettings.CreateDefault();
+        private RelayCredentials relayCredentials = new RelayCredentials();
         private bool capturingShortcut;
         private bool hotkeysBound;
         private bool updateProblem;
@@ -39,6 +41,7 @@ namespace CamOnKeyLight
 
         public MainForm(string[]? args = null)
         {
+            lightDispatch = new LightDispatch(lightHttp);
             launchArgs = args ?? Array.Empty<string>();
             startInBackground = launchArgs.Contains("--background");
             registrar = new Win32HotkeyRegistrar(() => IsHandleCreated ? Handle : IntPtr.Zero);
@@ -107,6 +110,7 @@ namespace CamOnKeyLight
         private void MainForm_Load(object sender, EventArgs e)
         {
             userSettings = UserSettingsFile.Load();
+            relayCredentials = LoadRelayCredentials();
             foreach (string name in userSettings.KnownCameraApps)
                 seenCameraApps.Add(name);
             ReloadLights();
@@ -372,22 +376,9 @@ namespace CamOnKeyLight
                 _ = PutBodyAsync(target.Address, body);
         }
 
-        private static HttpClient CreateLightClient()
-        {
-            SocketsHttpHandler handler = new SocketsHttpHandler
-            {
-                AllowAutoRedirect = false,
-                ConnectTimeout = LightTiming.LightRequestTimeout
-            };
-            return new HttpClient(handler, disposeHandler: true)
-            {
-                Timeout = LightTiming.LightRequestTimeout
-            };
-        }
-
         private async Task PutBodyAsync(string address, string body)
         {
-            if (!LightAddressRules.TryCreateUrl(address, out string url, out string? problem))
+            if (!LightAddressRules.TryCreateUrl(address, out _, out string? problem))
             {
                 ReportLightFailure(address, LightLinkState.InvalidAddress, problem ?? LightDiagnostics.Invalid(address), "put");
                 return;
@@ -395,11 +386,18 @@ namespace CamOnKeyLight
 
             try
             {
-                using CancellationTokenSource timeout = new CancellationTokenSource(LightTiming.LightRequestTimeout);
-                using StringContent content = new StringContent(body, Encoding.UTF8, "application/json");
-                using HttpResponseMessage response = await httpClient.PutAsync(url, content, timeout.Token);
-                if (!response.IsSuccessStatusCode)
-                    ReportLightFailure(address, LightLinkState.Unreachable, LightDiagnostics.HttpFailure(address, (int)response.StatusCode), "put");
+                LightExchange exchange = await lightDispatch.SendAsync(new LightExchangeRequest(
+                    address,
+                    false,
+                    body,
+                    userSettings.RelayUrl,
+                    relayCredentials,
+                    DateTime.UtcNow), CancellationToken.None);
+                if (!exchange.ConnectionFailed && exchange.StatusCode is >= 200 and < 300)
+                    return;
+
+                LightExchangeMeaning.Describe(exchange, address, out LightLinkState state, out string detail);
+                ReportLightFailure(address, state, detail, "put", route: exchange.Route);
             }
             catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or OperationCanceledException)
             {
@@ -407,14 +405,14 @@ namespace CamOnKeyLight
             }
         }
 
-        private void ReportLightFailure(string address, LightLinkState state, string detail, string operation, Exception? error = null)
+        private void ReportLightFailure(string address, LightLinkState state, string detail, string operation, Exception? error = null, LightRoute route = LightRoute.Direct)
         {
             void Show()
             {
                 if (IsDisposed)
                     return;
 
-                board.Report(address, state, detail);
+                board.Report(address, state, detail, route);
                 ShowLightRows();
             }
 
@@ -446,7 +444,10 @@ namespace CamOnKeyLight
 
             int attempt = userInitiated ? board.BeginUserRetry(address) : board.BeginBackgroundRefresh(address);
             ShowLightRows();
-            CancellationTokenSource cts = new CancellationTokenSource(LightTiming.LightRequestTimeout);
+            TimeSpan budget = RelayUrls.IsConfigured(userSettings.RelayUrl)
+                ? LightTiming.DirectAttemptWhenRelayConfigured + LightTiming.RelayRequestTimeout + TimeSpan.FromSeconds(1)
+                : LightTiming.LightRequestTimeout;
+            CancellationTokenSource cts = new CancellationTokenSource(budget);
             lightCalls[address] = cts;
             _ = RefreshOneAsync(address, attempt, cts);
         }
@@ -455,7 +456,8 @@ namespace CamOnKeyLight
         {
             LightLinkState state = LightLinkState.Unreachable;
             string detail = LightDiagnostics.Unreachable(address);
-            if (!LightAddressRules.TryCreateUrl(address, out string url, out string? problem))
+            LightRoute route = LightRoute.Direct;
+            if (!LightAddressRules.TryCreateUrl(address, out _, out string? problem))
             {
                 state = LightLinkState.InvalidAddress;
                 detail = problem ?? LightDiagnostics.Invalid(address);
@@ -463,25 +465,15 @@ namespace CamOnKeyLight
             }
             else try
             {
-                using HttpResponseMessage response = await httpClient.GetAsync(url, cts.Token);
-                if (!response.IsSuccessStatusCode)
-                {
-                    detail = LightDiagnostics.HttpFailure(address, (int)response.StatusCode);
-                }
-                else
-                {
-                    string body = await response.Content.ReadAsStringAsync(cts.Token);
-                    if (!LightResponse.TryReadPower(body, out bool on))
-                    {
-                        state = LightLinkState.UnexpectedReply;
-                        detail = LightDiagnostics.Unexpected(address);
-                    }
-                    else
-                    {
-                        state = on ? LightLinkState.On : LightLinkState.Off;
-                        detail = on ? LightDiagnostics.OnDetail(address) : LightDiagnostics.OffDetail(address);
-                    }
-                }
+                LightExchange exchange = await lightDispatch.SendAsync(new LightExchangeRequest(
+                    address,
+                    true,
+                    null,
+                    userSettings.RelayUrl,
+                    relayCredentials,
+                    DateTime.UtcNow), cts.Token);
+                LightExchangeMeaning.Describe(exchange, address, out state, out detail);
+                route = exchange.Route;
             }
             catch (OperationCanceledException ex)
             {
@@ -501,7 +493,7 @@ namespace CamOnKeyLight
                 if (IsDisposed)
                     return;
 
-                board.TryComplete(address, attempt, state, detail);
+                board.TryComplete(address, attempt, state, detail, route);
                 NotePresence(address, state);
                 if (lightCalls.TryGetValue(address, out CancellationTokenSource? current) && current == cts)
                 {
@@ -567,6 +559,7 @@ namespace CamOnKeyLight
             lblDetail.Text = board.FirstProblem ?? "";
             lblDetail.Visible = board.FirstProblem != null;
             lblDetail.ForeColor = ErrorColor();
+            UpdateQuietIndicator();
             btnRetry.Enabled = rows.Count > 0;
             bool selectedRow = lvLights.SelectedItems.Count > 0;
             btnRemoveLight.Enabled = selectedRow;
@@ -974,6 +967,33 @@ namespace CamOnKeyLight
             return value;
         }
 
+        private static RelayCredentials LoadRelayCredentials()
+        {
+            try
+            {
+                string local = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                return RelaySecretFile.Load(SettingsLocations.RelaySecretFile(local), new DpapiSecretProtector());
+            }
+            catch (Exception ex) when (ex is IOException or System.Security.Cryptography.CryptographicException or System.Text.Json.JsonException or PlatformNotSupportedException)
+            {
+                AppLog.Write("relay", "load", ex.GetType().Name);
+                return new RelayCredentials();
+            }
+        }
+
+        private void SaveRelayCredentials()
+        {
+            try
+            {
+                string local = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                RelaySecretFile.Save(SettingsLocations.RelaySecretFile(local), relayCredentials, new DpapiSecretProtector());
+            }
+            catch (Exception ex) when (ex is IOException or System.Security.Cryptography.CryptographicException or PlatformNotSupportedException)
+            {
+                AppLog.Write("relay", "save", ex.GetType().Name);
+            }
+        }
+
         private void SaveUserSettings()
         {
             UserSettingsFile.Save(userSettings);
@@ -1231,7 +1251,15 @@ namespace CamOnKeyLight
         {
             string title = LightModeController.Describe(controller.Mode).Title;
             bool quiet = QuietHours.IsQuiet(userSettings, DateTime.Now);
-            niTray.Text = QuietHours.TrayTip(title, quiet);
+            string tip = QuietHours.TrayTip(title, quiet);
+            if (board.UsesRelay)
+            {
+                string withRelay = tip + " · relay";
+                if (withRelay.Length <= 63)
+                    tip = withRelay;
+            }
+
+            niTray.Text = tip;
             tsmiQuiet.Text = QuietHours.MenuLabel(userSettings, DateTime.Now);
         }
 
@@ -1378,16 +1406,18 @@ namespace CamOnKeyLight
         {
             AppUserSettings edited = userSettings.Clone();
             List<string> observed = seenCameraApps.Concat(WebcamConsent.Read(inUseOnly: false)).ToList();
-            using OptionsForm dialog = new OptionsForm(edited, LightGrouping.Names(userSettings.Lights), observed);
+            using OptionsForm dialog = new OptionsForm(edited, LightGrouping.Names(userSettings.Lights), observed, relayCredentials);
             ApplyDialogTheme(dialog);
             if (dialog.ShowDialog(Visible ? this : null) != DialogResult.OK)
                 return;
 
             userSettings = edited;
+            relayCredentials = dialog.Credentials.Copy();
             seenCameraApps.Clear();
             foreach (string name in userSettings.KnownCameraApps)
                 seenCameraApps.Add(name);
             SaveUserSettings();
+            SaveRelayCredentials();
             UpdateQuietIndicator();
         }
 
